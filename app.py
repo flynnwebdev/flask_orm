@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 
@@ -69,7 +69,7 @@ def cards():
     # Convert the cards from the database into a JSON format and store them in result
     result = CardSchema(many=True).dump(cards_list)
     # return the data in JSON format
-    return jsonify(result)
+    return result
 
 
 if __name__ == '__main__':
