@@ -1,32 +1,30 @@
-from flask import Flask
+from dataclasses import dataclass
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
 
 app = Flask(__name__)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql+psycopg2://trello_user:123456@localhost:5432/trello_clone_db"
 
 db = SQLAlchemy(app)
-ma = Marshmallow(app)
+
+# Declare a model as a dataclass (Python >= 3.7)
 
 
-# Declare a model
+@dataclass
 class Card(db.Model):
     # Set the db table that will store instances of this model
     __tablename__ = "cards"
 
     # Define the columns/attributes needed
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(length=150))
-    description = db.Column(db.Text())
-    date = db.Column(db.Date())
-    status = db.Column(db.String())
-    priority = db.Column(db.String())
-
-
-class CardSchema(ma.Schema):
-    class Meta:
-        fields = ('id', 'title', 'description', 'date', 'status', 'priority')
+    # Since it's a dataclass, each attribute must have a type annotation
+    # The nice thing about that is we get serialization for free
+    id: int = db.Column(db.Integer, primary_key=True)
+    title: str = db.Column(db.String(length=150))
+    description: str = db.Column(db.Text())
+    date: str = db.Column(db.Date())
+    status: str = db.Column(db.String())
+    priority: str = db.Column(db.String())
 
 
 @app.cli.command('create')
@@ -66,10 +64,8 @@ def index():
 def cards():
     # get all the cards from the database table
     cards_list = Card.query.all()
-    # Convert the cards from the database into a JSON format and store them in result
-    result = CardSchema(many=True).dump(cards_list)
     # return the data in JSON format
-    return result
+    return jsonify(cards_list)
 
 
 if __name__ == '__main__':
